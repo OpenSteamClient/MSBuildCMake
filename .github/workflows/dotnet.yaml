@@ -36,7 +36,7 @@ jobs:
     - name: Build release
       run: dotnet build -c Release
 
-    - name: Upload to this repo
+    - name: Upload compiled
       run: |
         git config --global user.name "Github Actions Bot"
         git config --global user.email "<>"
