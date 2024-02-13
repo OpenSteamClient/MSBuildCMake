@@ -1,0 +1,51 @@
+name: .NET Build
+
+# Trigger the workflow on push or pull request
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "**.cs"
+      - "**.csproj"
+      - "**.axaml"
+      - "**.cpp"
+      - "**.h"
+      - "**.hpp"
+      - ".github/workflows/dotnet.yaml"
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download repo and submodules
+      run: | 
+        git submodule update --init --recursive
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Build and pack release
+      run: dotnet publish -c Release
+
+    - name: Upload to this repo
+      run: |
+        git config --global user.name "Github Actions Bot"
+        git config --global user.email "<>"
+        git config --global credential.helper cache
+        git clone https://${{secrets.ACCESS_TOKEN}}@github.com/OpenSteamClient/CustomBuildTask resultupload
+        cp -r ${{ github.workspace }}/artifacts/publish/CustomBuildTask/release resultupload/compiled/
+        cd resultupload
+        git add .
+        git commit -m "$(date)"
+        git push
+
+    
