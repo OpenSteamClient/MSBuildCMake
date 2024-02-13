@@ -34,7 +34,7 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Build release
-      run: dotnet publish -c Release
+      run: dotnet build -c Release
 
     - name: Upload to this repo
       run: |
@@ -42,7 +42,8 @@ jobs:
         git config --global user.email "<>"
         git config --global credential.helper cache
         git clone https://${{secrets.ACCESS_TOKEN}}@github.com/OpenSteamClient/CustomBuildTask resultupload
-        cp -r ${{ github.workspace }}/artifacts/publish/CustomBuildTask/release resultupload/compiled/
+        cp ${{ github.workspace }}/artifacts/bin/CustomBuildTask/release/CustomBuildTask.dll resultupload/compiled/
+        cp ${{ github.workspace }}/artifacts/bin/CustomBuildTask/release/CustomBuildTask.deps.json resultupload/compiled/
         cd resultupload
         git add .
         git commit -m "$(date)"
