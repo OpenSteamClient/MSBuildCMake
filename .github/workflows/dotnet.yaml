@@ -33,7 +33,7 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Build and pack release
+    - name: Build release
       run: dotnet publish -c Release
 
     - name: Upload to this repo
