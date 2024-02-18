@@ -1,0 +1,33 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="Sdk.props" Sdk="Microsoft.Build.NoTargets" Version="3.7.0" />
+
+    <PropertyGroup>
+        <TargetFramework>native</TargetFramework>
+
+        <!-- This is needed for this project to be able to be added to the SLN -->
+        <ProjectTypeGuids>{FD3E9FC9-4DE6-4138-A245-326056A92883}</ProjectTypeGuids>
+
+        <EnableDefaultItems>false</EnableDefaultItems>
+        <ImplicitUsings>disable</ImplicitUsings>
+        
+        <!-- We don't export any managed DLLs so these aren't relevant -->
+        <NoWarn>NU5100;NU5128</NoWarn>
+
+        <CustomBuildTaskRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..'))</CustomBuildTaskRoot>
+
+        <!-- All arches CMake should build for -->
+        <!-- With the RID linux-x64 and a value of "x86;x64" would build both 32 and 64-bit binaries and store them in linux-x64 -->
+        <!-- This is useful when you have an app that depends on 32-bit and 64-bit libraries both being present -->
+        <CMakeBuildAllArches></CMakeBuildAllArches>
+
+        <!-- Whether to add natives as None into runtimes (recommended, best for NuGet packaging and RID specific builds) or Content (if you want all natives to be copied into output for all RIDs) -->
+        <AddNativesAsContent>false</AddNativesAsContent>
+
+        <BuildForRuntimeIdentifiers></BuildForRuntimeIdentifiers>
+
+        <!-- We don't build any assemblies, so set this -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+
+        <RuntimeIdentifier>$(InRuntimeIdentifier)</RuntimeIdentifier>
+    </PropertyGroup>
+</Project>

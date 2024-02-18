@@ -1,0 +1,5 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <CMakeBuildTaskPath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory),"..","lib","net8.0","CMakeBuildTask.dll"))</CMakeBuildTaskPath>
+    </PropertyGroup>
+</Project>

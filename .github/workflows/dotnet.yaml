@@ -33,19 +33,32 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Build release
-      run: dotnet build -c Release
+    - name: Build and pack release
+      run: dotnet pack -c Release
 
-    - name: Upload compiled
+    - name: Set version env
+      run: echo "BuiltVersion=$(dotnet msbuild -getproperty:Version)" >> $GITHUB_ENV
+
+    - name: Add .nupkg as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Nuget .nupkg
+        path: ${{ github.workspace }}/artifacts/package/release/MSBuildCMake.SDK.${{ env.BuiltVersion }}.nupkg
+
+    - name: Upload to nuget repo
       run: |
         git config --global user.name "Github Actions Bot"
         git config --global user.email "<>"
         git config --global credential.helper cache
-        git clone https://${{secrets.ACCESS_TOKEN}}@github.com/OpenSteamClient/CustomBuildTask resultupload
-        cp ${{ github.workspace }}/artifacts/bin/CustomBuildTask/release/CustomBuildTask.dll resultupload/compiled/
-        cp ${{ github.workspace }}/artifacts/bin/CustomBuildTask/release/CustomBuildTask.deps.json resultupload/compiled/
-        cd resultupload
-        git add .
+        git clone https://${{secrets.ACCESS_TOKEN}}@github.com/OpenSteamClient/nuget
+        mkdir -p nuget/flatcontainer/msbuildcmake.sdk/${{ env.BuiltVersion }}
+        cp ${{ github.workspace }}/artifacts/package/release/MSBuildCMake.SDK.${{ env.BuiltVersion }}.nupkg nuget/flatcontainer/msbuildcmake.sdk/${{ env.BuiltVersion }}/msbuildcmake.sdk.${{ env.BuiltVersion }}.nupkg -f
+        cd nuget
+        cd updatetool
+        node index.js MSBuildCMake.SDK ${{ env.BuiltVersion }}
+        cd ..
+        git add flatcontainer/msbuildcmake.sdk/index.json
+        git add flatcontainer/msbuildcmake.sdk/${{ env.BuiltVersion }}/msbuildcmake.sdk.${{ env.BuiltVersion }}.nupkg
         git commit -m "$(date)"
         git push
 

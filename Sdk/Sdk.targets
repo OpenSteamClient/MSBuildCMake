@@ -1,0 +1,96 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup Condition="'$(CMakeBuildConfig)' == '' And '$(Configuration)' == 'Debug'">
+        <!-- What configuration CMake will use for building natives in a MSBuild debug configuration -->
+        <CMakeBuildConfig>Debug</CMakeBuildConfig>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(CMakeBuildConfig)' == '' And '$(Configuration)' == 'Release'">
+        <!-- What configuration CMake will use for building natives in a MSBuild release configuration -->
+        <CMakeBuildConfig>MinSizeRel</CMakeBuildConfig>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <_WantsMultiBuild>false</_WantsMultiBuild>
+        <_UseAutoRID>true</_UseAutoRID>
+        <_WantsMultiBuild Condition="'$(BuildForRuntimeIdentifiers)' != ''">true</_WantsMultiBuild>
+        
+        <_UseAutoRID Condition="'$(_WantsMultiBuild)' == 'true' And '$(AddNativesAsContent)' != 'true'">false</_UseAutoRID>
+
+        <!-- This can't happen due to the limitations, so always just use auto RID here -->
+        <_UseAutoRID Condition="'$(_WantsMultiBuild)' == 'true' And '$(AddNativesAsContent)' == 'true'">true</_UseAutoRID>
+
+        <!-- If we already have a RID, never use auto rid -->
+        <_UseAutoRID Condition="'$(RuntimeIdentifier)' != ''">false</_UseAutoRID>
+
+        <!-- Clear this property when we detect the limitation -->
+        <BuildForRuntimeIdentifiers Condition="'$(_WantsMultiBuild)' == 'true' And '$(AddNativesAsContent)' == 'true'"></BuildForRuntimeIdentifiers>
+    </PropertyGroup>
+    
+    <!-- If it is a single target build, append RID and get effective RID -->
+    <Import Condition="'$(_UseAutoRID)' == 'true'" Project="GetEffectiveRuntimeIdentifier.props"/>
+
+    <PropertyGroup Condition="'$(BuildForRuntimeIdentifiers)' == ''">
+        <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(BuildForRuntimeIdentifiers)' != ''">
+        <RuntimeIdentifier></RuntimeIdentifier>
+    </PropertyGroup>
+    
+    <!-- Define targets you want to override after this line -->
+    <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" Version="3.7.0" />
+
+    <Import Project="GetPathToTask.props"/>
+
+    <UsingTask TaskName="NativeCompilationTask" AssemblyFile="$(CMakeBuildTaskPath)" />
+
+    <!-- This runs everytime, but it's fine since CMake quits fast if the output is up to date -->
+    <Target Name="Build">
+        <Warning Condition="'$(AddNativesAsContent)' == 'true' And '$(_UseAutoRID)' == 'true'" Code="MSBCM0001" Text="Cannot currently add natives as content if a RID has not been specified due to MSBuild limitations. Remove AddNativesAsContent=true or specify a RuntimeIdentifier. Defaulting to using default RID (See https://github.com/OpenSteamClient/MSBuildCMake.SDK/blob/master/Sdk/Sdk.targets, Target 'Build' for details)"/>
+        <Message Importance="High" Text="OutputPath = $(OutputPath)" />
+        <Message Importance="High" Text="BaseOutputPath = $(BaseOutputPath)" />
+        <Message Importance="High" Text="RuntimeIdentifier = $(RuntimeIdentifier)" />
+        <Message Importance="High" Text="_UseAutoRID = $(_UseAutoRID)" />
+
+        <CallTarget Targets="Restore" />
+
+        <NativeCompilationTask 
+            TargetRID="$(RuntimeIdentifier)" 
+            OutputDir="$(OutputPath)" 
+            IntermediateOutputDir="$(IntermediateOutputPath)" 
+            CMakeBuildConfig="$(CMakeBuildConfig)" 
+            CustomBuildTaskRoot="$(CustomBuildTaskRoot)"
+            CMakeBuildAllArches="$(CMakeBuildAllArches)"
+            BuildForRuntimeIdentifiers="$(BuildForRuntimeIdentifiers)"
+            RootDir="$(CMakeListsDir)">
+        </NativeCompilationTask>
+
+        <ItemGroup Condition="'$(AddNativesAsContent)' != 'true'">
+            <!-- This is responsible for copying the output binaries to wherever needed -->
+            <None Include="$(OutputPath)/**/*" Pack="true" PackagePath="\runtimes\"/>
+        </ItemGroup>
+
+        <ItemGroup Condition="'$(AddNativesAsContent)' == 'true'">
+            <!-- Single target builds, get only the one we need -->
+            <Content Condition="'$(RuntimeIdentifier)' != ''" Include="$(OutputPath)\$(RuntimeIdentifier)\**\*">
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                <PackageCopyToOutput>true</PackageCopyToOutput>
+            </Content>
+
+            <!-- Multi target builds, get all of the output -->
+            <!-- TODO: Couldn't get this shit working without it flattening the directory tree. Let's just throw an error instead. If you want to try to fix this: -->
+            <!-- The final directory path should be runtimes\linux-x64\libs -->
+            <!-- <Content Condition="'$(RuntimeIdentifier)' == ''" Include="$(OutputPath)\**\*">
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                <PackageCopyToOutput>true</PackageCopyToOutput>
+            </Content> -->
+        </ItemGroup>
+    </Target>
+
+    <Target Name="Clean">
+        <RemoveDir Directories="$(BaseOutputPath)"/>
+        <RemoveDir Directories="$(BaseIntermediateOutputPath)"/>
+    </Target>
+
+    <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+</Project>

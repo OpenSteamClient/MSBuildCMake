@@ -30,19 +30,9 @@ endfunction()
 if (MSVC)
     # Requires a "generator expression" to not create an extra Debug folder...
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${NATIVE_OUTPUT_FOLDER}$<0:>)
-
-    # Requires this shit to not fail the build that worked fine before
-    # Don't worry, doesn't use debug configuration even though it says debug, it picks one automatically
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 else()
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${NATIVE_OUTPUT_FOLDER})
 endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${NATIVE_OUTPUT_FOLDER})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${NATIVE_OUTPUT_FOLDER})
-
-if (NOT DEFINED IDE_BUILD)
-    # Save build timestamp to file
-    string(TIMESTAMP UNIX_TIMESTAMP "%s")
-    file(WRITE ${NATIVE_OUTPUT_FOLDER}/../build_timestamp ${UNIX_TIMESTAMP})
-endif()

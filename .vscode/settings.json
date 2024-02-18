@@ -1,0 +1,5 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/TestProject.Native",
+    "cmake.buildDirectory": "${workspaceFolder}/TestProject.Native/IDEBuild",
+    "cmake.configureArgs": ["-DIDE_BUILD=1"]
+}

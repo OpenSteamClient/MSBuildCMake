@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- This is needed for the natives to copy over when running "dotnet build" -->
+    <!-- Note that this means that all the dependencies will be copied, may be unideal in certain scenarios.  -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- PackageReference (NuGet package) is the recommended way to consume natives in managed projects, but it's disabled here for developer convenience -->
+    <!-- <PackageReference Include="TestProject.Native" Version="1.0.0" /> -->
+
+    <!-- Alternatively, you can use ProjectReference, but you must pass atleast these three properties -->
+    <ProjectReference ReferenceOutputAssembly="False" Include="..\TestProject.Native\TestProject.Native.nativeproj" Properties="AddNativesAsContent=true;InRuntimeIdentifier=$(RuntimeIdentifier)"/>
+  </ItemGroup>
+</Project>
