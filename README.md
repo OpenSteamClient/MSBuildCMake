@@ -1,4 +1,4 @@
-# CustomBuildTask
+# MSBuildCMake
 A MSBuild task that allows you to build native code cross-platformedly. 
 
 # Features
