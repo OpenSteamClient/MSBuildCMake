@@ -276,7 +276,7 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
         this.Log.LogMessage(MessageImportance.High, $"Attempting to build natives for '{request.RID}', with CMake configuration {CMakeBuildConfig}");
         this.Log.LogMessage(MessageImportance.High, $"IsCrossCompile: '{isCrossCompile}'");
         
-        string builddir = Path.Combine(IntermediateOutputDir, request.RID);
+        string builddir = Path.Combine(IntermediateOutputDir, request.RID, request.ArchStr);
         string outputdir = Path.Combine(OutputDir, request.RID, "native");
         Directory.CreateDirectory(builddir);
         Directory.CreateDirectory(outputdir);
