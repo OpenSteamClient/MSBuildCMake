@@ -330,7 +330,7 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
         }
 
         this.Log.LogMessage(MessageImportance.High, $"Building {request.RID} natives " + (string.IsNullOrEmpty(compilerIdentity) ? "" : "with " + compilerIdentity));
-        this.RunCMake($"\"{RootDir}\" {cmakeConfigureFlags} -DCustomBuildTaskRoot=\"{CustomBuildTaskRoot}\" -DBUILD_PLATFORM_TARGET=\"{request.OSStr}\" -DBUILD_ARCH=\"{request.ArchStr}\" -DBUILD_RID=\"{request.RID}\" -DNATIVE_OUTPUT_FOLDER=\"{outputdir}\"", builddir);
+        this.RunCMake($"\"{RootDir}\" {cmakeConfigureFlags} -DCMAKE_BUILD_TYPE=\"{CMakeBuildConfig}\" -DCustomBuildTaskRoot=\"{CustomBuildTaskRoot}\" -DBUILD_PLATFORM_TARGET=\"{request.OSStr}\" -DBUILD_ARCH=\"{request.ArchStr}\" -DBUILD_RID=\"{request.RID}\" -DNATIVE_OUTPUT_FOLDER=\"{outputdir}\"", builddir);
         this.RunCMake($"--build . --config {CMakeBuildConfig} --parallel {Environment.ProcessorCount*2}", builddir);        
     }
 
