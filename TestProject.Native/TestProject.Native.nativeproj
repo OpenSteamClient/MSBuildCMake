@@ -1,4 +1,4 @@
-<Project Sdk="MSBuildCMake.SDK/1.0.0">
+<Project Sdk="MSBuildCMake.SDK/1.0.4">
     <PropertyGroup>
         <!-- Set this to the platforms you want to build (in a single build/package/publish). Will try to build all of them, but if compilers are missing for some of these platforms the platform will be skipped (with warnings emitted) -->
         <BuildForRuntimeIdentifiers>win-x64;osx-x64;linux-x64</BuildForRuntimeIdentifiers>
@@ -12,7 +12,7 @@
         <CMakeListsDir>$(MSBuildThisFileDirectory)</CMakeListsDir>
 
         <!-- Which arches to build for for a single RID, remove or delete if you want to build according to RID -->
-        <CMakeBuildAllArches>x86;x64</CMakeBuildAllArches>
+        <CMakeBuildAllArches>x86;x64;arm64</CMakeBuildAllArches>
 
         <!-- If you want to force a build config, use the below property and uncomment it. By default Debug is used for debug, and MinSizeRel is used for release. -->
         <!-- <CMakeBuildConfig>MinSizeRel</CMakeBuildConfig> -->

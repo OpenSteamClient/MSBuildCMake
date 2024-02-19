@@ -23,3 +23,7 @@ We define some variables for you to use in your CMakeLists:
 - BUILD_ARCH: Architecture part of the current RID, for example: "x64", "x86", "arm64"
 - BUILD_RID: Current RID, for example: "win-x64", "linux-x64", "osx-arm64"
 - NATIVE_OUTPUT_FOLDER: The path where natives should be stored (done automatically, this is for extra files that cmake doesn't place into output)
+
+# OSXCross
+Note that by using OSXCross you agree to the [Xcode license terms](https://www.apple.com/legal/sla/docs/xcode.pdf)
+No guide for setting up OSXCross here, figure it out yourself for your own distro.

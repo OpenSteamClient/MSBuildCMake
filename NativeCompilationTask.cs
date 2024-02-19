@@ -122,31 +122,39 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
             targetRIDS.Add(TargetRID);
         }
 
-        if (!hasMultiRID && !CanCompileFor(new BuildRequest(targetRIDS.First()).OS)) {
+        var firstreq = new BuildRequest(targetRIDS.First());
+        if (!hasMultiRID && !CanCompileFor(firstreq.OS, firstreq.Arch)) {
             Log.LogError("Can't build natives for target " + targetRIDS.First() + ", missing compiler!");
             return false;
         }
 
+        List<BuildRequest> allRequests = [];
         List<BuildRequest> requests = [];
         foreach (var rid in targetRIDS)
         {
             var request = new BuildRequest(rid);
-            if (CanCompileFor(request.OS)) {
-                if (!string.IsNullOrEmpty(CMakeBuildAllArches))
+            if (!string.IsNullOrEmpty(CMakeBuildAllArches))
+            {
+                foreach (var arch in CMakeBuildAllArches.Split(';'))
                 {
-                    foreach (var arch in CMakeBuildAllArches.Split(';'))
+                    allRequests.Add(new BuildRequest(request)
                     {
-                        requests.Add(new BuildRequest(request)
-                        {
-                            Arch = GetArchFromString(arch)
-                        });
-                    }
-                } else {
-                    requests.Add(request);
+                        Arch = GetArchFromString(arch)
+                    });
                 }
             } else {
-                Log.LogWarning("Not building natives for " + rid + ", missing compiler!");
+                allRequests.Add(request);
             }
+        }
+
+        foreach (var item in allRequests)
+        {
+            if (!CanCompileFor(item.OS, item.Arch)) {
+                Log.LogWarning($"Not building natives for {item.OSStr}-{item.ArchStr}, missing compiler!");
+                continue;
+            }
+
+            requests.Add(item);
         }
 
         try
@@ -205,12 +213,18 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
         };
     }
 
-    private static bool CanCompileFor(ETargetOS targetOS) {
+    private static bool CanCompileFor(ETargetOS targetOS, ETargetArch targetArch) {
         switch (targetOS)
         {
             case ETargetOS.Windows:
                 if (CurrentOS == ETargetOS.Linux || CurrentOS == ETargetOS.MacOS) {
-                    return FileEx.Exists("x86_64-w64-mingw32-gcc") && FileEx.Exists("ldd");
+                    if (targetArch == ETargetArch.X64) {
+                        return FileEx.Exists("x86_64-w64-mingw32-gcc") && FileEx.Exists("ldd");
+                    } else if (targetArch == ETargetArch.X86) {
+                        return FileEx.Exists("i686-w64-mingw32-gcc") && FileEx.Exists("ldd");
+                    } else if (targetArch == ETargetArch.ARM64) {
+                        return FileEx.Exists("aarch64-w64-mingw32-gcc") && FileEx.Exists("ldd");
+                    }
                 } else if (CurrentOS == ETargetOS.Windows) {
                     // Assume the user has done their due diligence and installed a compiler. TODO: test for compilers with CMake
                     return true;
@@ -223,7 +237,16 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
                 break;
             case ETargetOS.MacOS:
                 if (CurrentOS == ETargetOS.Linux) {
-                    return FileEx.Exists("osxcross-conf");
+                    if (FileEx.Exists("osxcross-conf")) {
+                        string osxcrossversion = GetOSXCrossVar("OSXCROSS_TARGET");
+                        if (targetArch == ETargetArch.X64) {
+                            return FileEx.Exists($"x86_64-apple-{osxcrossversion}-clang");
+                        } else if (targetArch == ETargetArch.X86) {
+                            return FileEx.Exists($"i386-apple-{osxcrossversion}-clang");
+                        } else if (targetArch == ETargetArch.ARM64) {
+                            return FileEx.Exists($"aarch64-apple-{osxcrossversion}-clang");
+                        }
+                    }
                 }
 
                 if (CurrentOS == ETargetOS.MacOS) {
@@ -309,6 +332,8 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
                 if (CurrentOS == ETargetOS.Linux) {
                     if (request.Arch == ETargetArch.X86) {
                         compilerIdentity = "GCC32";
+                    } else if (request.Arch == ETargetArch.ARM64) {
+                        compilerIdentity = "GCCARM64";
                     }
                 }
                 break;
@@ -318,19 +343,27 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
                     // Use osxcross for everything
                     string osxcrossversion = GetOSXCrossVar("OSXCROSS_TARGET");
                     string osxcrosstarget = Path.GetFullPath(GetOSXCrossVar("OSXCROSS_TARGET_DIR"));
-                    cmakeConfigureFlags = $"-DOSXCROSS_TARGET={osxcrossversion} -DOSXCROSS_TARGET_DIR=\"{osxcrosstarget}\" ";
-                    compilerIdentity = "osxcross";
+                    cmakeConfigureFlags = $"-DOSXCROSS_TARGET:STRING=\"{osxcrossversion}\" -DOSXCROSS_TARGET_DIR:STRING=\"{osxcrosstarget}\" ";
+                    if (request.Arch == ETargetArch.X64) {
+                        compilerIdentity = "osxcross64";
+                    } else if (request.Arch == ETargetArch.X86) {
+                        compilerIdentity = "osxcross32";
+                    } else if (request.Arch == ETargetArch.ARM64) {
+                        compilerIdentity = "osxcrossarm64";
+                    } else {
+                        throw new InvalidOperationException("Arch " + request.Arch + " not supported for cross compile for Linux -> MacOS");
+                    }
                 }
                 break;
         }
 
         // Set the toolchain file if we need one
         if (!string.IsNullOrEmpty(compilerIdentity)) {
-            cmakeConfigureFlags += $" -DCMAKE_TOOLCHAIN_FILE=\"{CustomBuildTaskRoot}/crosscomp/{compilerIdentity}.cmake\"";
+            cmakeConfigureFlags += $" -DCMAKE_TOOLCHAIN_FILE:STRING=\"{CustomBuildTaskRoot}/crosscomp/{compilerIdentity}.cmake\"";
         }
 
-        this.Log.LogMessage(MessageImportance.High, $"Building {request.RID} natives " + (string.IsNullOrEmpty(compilerIdentity) ? "" : "with " + compilerIdentity));
-        this.RunCMake($"\"{RootDir}\" {cmakeConfigureFlags} -DCMAKE_BUILD_TYPE=\"{CMakeBuildConfig}\" -DCustomBuildTaskRoot=\"{CustomBuildTaskRoot}\" -DBUILD_PLATFORM_TARGET=\"{request.OSStr}\" -DBUILD_ARCH=\"{request.ArchStr}\" -DBUILD_RID=\"{request.RID}\" -DNATIVE_OUTPUT_FOLDER=\"{outputdir}\"", builddir);
+        this.Log.LogMessage(MessageImportance.High, $"Building {request.RID} ({request.ArchStr}) natives " + (string.IsNullOrEmpty(compilerIdentity) ? "" : "with " + compilerIdentity));
+        this.RunCMake($"\"{RootDir}\" {cmakeConfigureFlags} -DCMAKE_BUILD_TYPE:STRING=\"{CMakeBuildConfig}\" -DCustomBuildTaskRoot:STRING=\"{CustomBuildTaskRoot}\" -DBUILD_PLATFORM_TARGET:STRING=\"{request.OSStr}\" -DBUILD_ARCH:STRING=\"{request.ArchStr}\" -DBUILD_RID:STRING=\"{request.RID}\" -DNATIVE_OUTPUT_FOLDER:STRING=\"{outputdir}\"", builddir);
         this.RunCMake($"--build . --config {CMakeBuildConfig} --parallel {Environment.ProcessorCount*2}", builddir);        
     }
 
