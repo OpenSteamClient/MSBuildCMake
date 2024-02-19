@@ -231,8 +231,15 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
                 }
                 break;
             case ETargetOS.Linux:
-                if (CurrentOS == ETargetOS.Linux || CurrentOS == ETargetOS.MacOS) {
-                    return (FileEx.Exists("g++") || FileEx.Exists("gcc") || FileEx.Exists("ninja")) && FileEx.Exists("ldd");
+                if (CurrentOS == ETargetOS.Linux) {
+                    if (targetArch == ETargetArch.X64) {
+                        return FileEx.Exists("x86_64-linux-gnu-gcc");
+                    } else if (targetArch == ETargetArch.X86) {
+                        // Regular 64-bit gcc is used for 32-bit builds with an extra flag at compile and link time
+                        return FileEx.Exists("x86_64-linux-gnu-gcc");
+                    } else if (targetArch == ETargetArch.ARM64) {
+                        return FileEx.Exists("aarch64-linux-gnu-gcc");
+                    }
                 }
                 break;
             case ETargetOS.MacOS:
