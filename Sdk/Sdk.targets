@@ -62,6 +62,7 @@
             CustomBuildTaskRoot="$(CustomBuildTaskRoot)"
             CMakeBuildAllArches="$(CMakeBuildAllArches)"
             BuildForRuntimeIdentifiers="$(BuildForRuntimeIdentifiers)"
+            CMakeExtraFlags="$(CMakeExtraFlags)"
             RootDir="$(CMakeListsDir)">
         </NativeCompilationTask>
 

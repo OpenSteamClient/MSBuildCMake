@@ -29,5 +29,8 @@
         <IncludeBuildOutput>false</IncludeBuildOutput>
 
         <RuntimeIdentifier>$(InRuntimeIdentifier)</RuntimeIdentifier>
+
+        <!-- Extra flags passed to CMake configure -->
+        <CMakeExtraFlags></CMakeExtraFlags>
     </PropertyGroup>
 </Project>

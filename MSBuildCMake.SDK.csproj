@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/OpenSteamClient/CustomBuildTask</RepositoryUrl>
 
     <!-- Update the version here when you make changes -->
-    <VersionPrefix>1.0.5</VersionPrefix>
+    <VersionPrefix>1.0.6</VersionPrefix>
   </PropertyGroup>
   
   <ItemGroup>

@@ -75,6 +75,9 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
 
     [Required]
     public string CustomBuildTaskRoot { get; set; } = "";
+
+    public string CMakeExtraFlags { get; set; } = "";
+
     public string CMakeBuildAllArches { get; set; } = "";
     public string BuildForRuntimeIdentifiers { get; set; } = "";
 
@@ -370,7 +373,7 @@ public class NativeCompilationTask : Microsoft.Build.Utilities.Task
         }
 
         this.Log.LogMessage(MessageImportance.High, $"Building {request.RID} ({request.ArchStr}) natives " + (string.IsNullOrEmpty(compilerIdentity) ? "" : "with " + compilerIdentity));
-        this.RunCMake($"\"{RootDir}\" {cmakeConfigureFlags} -DCMAKE_BUILD_TYPE:STRING=\"{CMakeBuildConfig}\" -DCustomBuildTaskRoot:STRING=\"{CustomBuildTaskRoot}\" -DBUILD_PLATFORM_TARGET:STRING=\"{request.OSStr}\" -DBUILD_ARCH:STRING=\"{request.ArchStr}\" -DBUILD_RID:STRING=\"{request.RID}\" -DNATIVE_OUTPUT_FOLDER:STRING=\"{outputdir}\"", builddir);
+        this.RunCMake($"\"{RootDir}\" {CMakeExtraFlags} {cmakeConfigureFlags} -DCMAKE_BUILD_TYPE:STRING=\"{CMakeBuildConfig}\" -DCustomBuildTaskRoot:STRING=\"{CustomBuildTaskRoot}\" -DBUILD_PLATFORM_TARGET:STRING=\"{request.OSStr}\" -DBUILD_ARCH:STRING=\"{request.ArchStr}\" -DBUILD_RID:STRING=\"{request.RID}\" -DNATIVE_OUTPUT_FOLDER:STRING=\"{outputdir}\"", builddir);
         this.RunCMake($"--build . --config {CMakeBuildConfig} --parallel {Environment.ProcessorCount*2}", builddir);        
     }
 
