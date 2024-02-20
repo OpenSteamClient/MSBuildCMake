@@ -47,7 +47,7 @@
 
     <!-- This runs everytime, but it's fine since CMake quits fast if the output is up to date -->
     <Target Name="Build">
-        <Warning Condition="'$(AddNativesAsContent)' == 'true' And '$(_UseAutoRID)' == 'true'" Code="MSBCM0001" Text="Cannot currently add natives as content if a RID has not been specified due to MSBuild limitations. Remove AddNativesAsContent=true or specify a RuntimeIdentifier. Defaulting to using default RID (See https://github.com/OpenSteamClient/MSBuildCMake/blob/master/Sdk/Sdk.targets, Target 'Build' for details)"/>
+        <Warning Condition="'$(AddNativesAsContent)' == 'true' And '$(_UseAutoRID)' == 'true' And '$(CMakeDisableRIDSubfolder)' != 'true'" Code="MSBCM0001" Text="Cannot currently add natives as content if a RID has not been specified due to MSBuild limitations. Remove AddNativesAsContent=true or specify a RuntimeIdentifier. Defaulting to using default RID (See https://github.com/OpenSteamClient/MSBuildCMake/blob/master/Sdk/Sdk.targets, Target 'Build' for details)"/>
         <Message Importance="High" Text="OutputPath = $(OutputPath)" />
         <Message Importance="High" Text="BaseOutputPath = $(BaseOutputPath)" />
         <Message Importance="High" Text="RuntimeIdentifier = $(RuntimeIdentifier)" />
