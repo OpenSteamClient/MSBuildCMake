@@ -32,5 +32,8 @@
 
         <!-- Extra flags passed to CMake configure -->
         <CMakeExtraFlags></CMakeExtraFlags>
+
+        <!-- Disable the RID subfolder -->
+        <CMakeDisableRIDSubfolder>false</CMakeDisableRIDSubfolder>
     </PropertyGroup>
 </Project>

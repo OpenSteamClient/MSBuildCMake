@@ -28,6 +28,7 @@
     
     <!-- If it is a single target build, append RID and get effective RID -->
     <Import Condition="'$(_UseAutoRID)' == 'true'" Project="GetEffectiveRuntimeIdentifier.props"/>
+    <Import Project="GetEffectiveRuntimeIdentifierAsSeparateVariable.props"/>
 
     <PropertyGroup Condition="'$(BuildForRuntimeIdentifiers)' == ''">
         <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
@@ -73,7 +74,13 @@
 
         <ItemGroup Condition="'$(AddNativesAsContent)' == 'true'">
             <!-- Single target builds, get only the one we need -->
-            <Content Condition="'$(RuntimeIdentifier)' != ''" Include="$(OutputPath)\$(RuntimeIdentifier)\**\*">
+            <Content Condition="'$(RuntimeIdentifier)' != '' And '$(CMakeDisableRIDSubfolder)' == ''" Include="$(OutputPath)\$(RuntimeIdentifier)\**\*">
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                <PackageCopyToOutput>true</PackageCopyToOutput>
+            </Content>
+
+            <!-- Builds that ignore the rid and use auto RID -->
+            <Content Condition="'$(CMakeDisableRIDSubfolder)' == 'true'" Include="$(OutputPath)\$(EffectiveRuntimeIdentifier)\**\*">
                 <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
                 <PackageCopyToOutput>true</PackageCopyToOutput>
             </Content>
