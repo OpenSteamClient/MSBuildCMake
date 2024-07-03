@@ -30,10 +30,6 @@
     <Import Condition="'$(_UseAutoRID)' == 'true'" Project="GetEffectiveRuntimeIdentifier.props"/>
     <Import Project="GetEffectiveRuntimeIdentifierAsSeparateVariable.props"/>
 
-    <PropertyGroup Condition="'$(BuildForRuntimeIdentifiers)' == ''">
-        <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
-    </PropertyGroup>
-
     <PropertyGroup Condition="'$(BuildForRuntimeIdentifiers)' != ''">
         <RuntimeIdentifier></RuntimeIdentifier>
     </PropertyGroup>
