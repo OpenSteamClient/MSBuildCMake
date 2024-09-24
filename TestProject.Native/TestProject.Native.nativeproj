@@ -1,4 +1,4 @@
-<Project Sdk="MSBuildCMake.SDK/1.0.4">
+<Project Sdk="MSBuildCMake.SDK/1.1.0">
     <PropertyGroup>
         <!-- Set this to the platforms you want to build (in a single build/package/publish). Will try to build all of them, but if compilers are missing for some of these platforms the platform will be skipped (with warnings emitted) -->
         <BuildForRuntimeIdentifiers>win-x64;osx-x64;linux-x64</BuildForRuntimeIdentifiers>

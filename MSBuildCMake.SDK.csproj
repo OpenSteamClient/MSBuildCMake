@@ -8,12 +8,13 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <PackageType>MSBuildSdk</PackageType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageId>MSBuildCMake.SDK</PackageId>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/OpenSteamClient/CustomBuildTask</RepositoryUrl>
 
     <!-- Update the version here when you make changes -->
-    <VersionPrefix>1.0.9</VersionPrefix>
+    <VersionPrefix>1.1.0</VersionPrefix>
   </PropertyGroup>
   
   <ItemGroup>
@@ -26,7 +27,7 @@
     <None Update="cmake\**" Pack="true" PackagePath="\" />
     <None Update="crosscomp\**" Pack="true" PackagePath="\" />
     <None Include="README.md" Pack="true" PackagePath="\"/>
-    <Content Include="LICENSE" Pack="true" PackagePath="\"/>
+    <None Include="LICENSE" Pack="true" PackagePath=""/>
   </ItemGroup>
 
 </Project>

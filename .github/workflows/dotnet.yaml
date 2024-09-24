@@ -12,7 +12,6 @@ on:
       - "**.h"
       - "**.hpp"
       - ".github/workflows/dotnet.yaml"
-  pull_request:
 
 jobs:
   build:
@@ -38,12 +37,6 @@ jobs:
 
     - name: Set version env
       run: echo "BuiltVersion=$(dotnet msbuild -getproperty:Version)" >> $GITHUB_ENV
-
-    - name: Add .nupkg as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Nuget .nupkg
-        path: ${{ github.workspace }}/artifacts/package/release/MSBuildCMake.SDK.${{ env.BuiltVersion }}.nupkg
 
     - name: Upload to nuget repo
       run: |
